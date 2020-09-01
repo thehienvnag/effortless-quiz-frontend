@@ -9,9 +9,9 @@ export const axiosInstance = axios.create({
   responseType: "application/json",
   headers: {
     "X-Requested-With": "XMLHttpRequest",
-    "Access-Control-Allow-Origin": "*"
   },
 });
+axios.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
 
 export const fbAxiosInstance = axios.create({
   baseURL: fbBaseURL,
