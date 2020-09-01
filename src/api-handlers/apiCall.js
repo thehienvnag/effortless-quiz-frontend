@@ -11,7 +11,7 @@ export const axiosInstance = axios.create({
     "X-Requested-With": "XMLHttpRequest",
   },
 });
-axios.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
+axiosInstance.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
 
 export const fbAxiosInstance = axios.create({
   baseURL: fbBaseURL,
