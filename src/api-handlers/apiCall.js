@@ -1,6 +1,6 @@
 import axios from "axios";
 import { getCookie } from "../store/utils/Utilities";
-const baseURL = "http://localhost:8888/api/";
+const baseURL = "https://effortless-quiz-back-end.herokuapp.com/api/";
 const fbBaseURL = "https://graph.facebook.com/me";
 import { mutationTypes } from "../store/mutations/userMutations";
 
