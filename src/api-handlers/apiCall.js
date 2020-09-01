@@ -7,11 +7,12 @@ import { mutationTypes } from "../store/mutations/userMutations";
 export const axiosInstance = axios.create({
   baseURL,
   responseType: "application/json",
+  withCredentials: false,
   headers: {
     "X-Requested-With": "XMLHttpRequest",
+    "Access-Control-Allow-Origin": "*"
   },
 });
-axiosInstance.defaults.headers["Access-Control-Allow-Origin"] = "*";
 
 export const fbAxiosInstance = axios.create({
   baseURL: fbBaseURL,
