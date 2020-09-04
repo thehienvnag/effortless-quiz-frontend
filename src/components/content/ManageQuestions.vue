@@ -160,13 +160,14 @@ export default {
           // id: id
         })
       );
+      console.log(requestData);
       this.saveAllLoading = true;
-      const data = await this.$store.dispatch(actionTypes.saveQuizQuestions, {
+      await this.$store.dispatch(actionTypes.saveQuizQuestions, {
         userId: this.userId,
         quizId: this.quizId,
         questions: requestData,
       });
-      data;
+      
       this.saveAllLoading = false;
     },
   },

@@ -246,16 +246,18 @@ export default {
   },
   methods: {
     provideInputCode() {
-      this.inputCode = true;
       this.code = 'console.log("Hello World")';
       this.$emit("saveQuestion", {
         quizPos: this.quizPos,
-        code: code,
+        code: this.code,
       });
     },
     disableInputCode() {
-      this.inputCode = false;
       this.code = null;
+      this.$emit("saveQuestion", {
+        quizPos: this.quizPos,
+        code: this.code,
+      });
     },
     handleCancel() {
       this.previewVisible = false;
