@@ -5,7 +5,12 @@
       v-if="showContent"
       title="Join Quiz"
       :bordered="false"
-      :style="{ width: '50%', margin: '2em auto', marginTop: '15px', padding: '2em' }"
+      :style="{
+        width: '50%',
+        margin: '2em auto',
+        marginTop: '15px',
+        padding: '2em',
+      }"
     >
       <div :style="{ width: '90%', margin: '0 auto' }">
         <a-form-item label="Quiz Code" :style="{ marginBottom: '5px' }">
@@ -99,6 +104,7 @@ export default {
       visible: false,
       tableAppear: false,
       showContent: true,
+      launchQuizzes: null,
     };
   },
   beforeCreate() {
@@ -114,9 +120,11 @@ export default {
     quizzes() {
       return this.$store.state.quizStore.launchQuizzes;
     },
-    launchQuizzes() {
-      return this.quizzes ? this.quizzes.content : null;
-    },
+  },
+  watch: {
+    quizzes(){
+      this.launchQuizzes = this.quizzes ? this.quizzes.content : null;
+    }
   },
   methods: {
     onChangeQuizCode(e) {

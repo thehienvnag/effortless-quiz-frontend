@@ -31,6 +31,7 @@ export const actionTypes = {
   cancelQuiz: "cancelQuiz",
   disableQuiz: "disableQuiz",
   loadStudentAttemptListOfQuiz: "loadStudentAttemptListOfQuiz",
+  exportToExcel: "exportToExcel",
 };
 export const actions = {
   [actionTypes.loadQuizzes]: authenticateAction(
@@ -140,6 +141,13 @@ export const actions = {
       const uri = `users/${userId}/stagingQuizzes/${stagingQuizzesId}/studentAttempts?page=${page}&size=${size}`;
       const { data } = await axiosInstance.get(uri);
       commit(SAVE_STUDENT_ATTEMPT_LIST, data);
+    }
+  ),
+  [actionTypes.exportToExcel]: authenticateAction(
+    async (context, { userId, stagingQuizzesId }) => {
+      const uri = `users/${userId}/stagingQuizzes/${stagingQuizzesId}/studentAttempts?isExportExcel=true`;
+      const { data } = await axiosInstance.get(uri);
+      return data;
     }
   ),
   [actionTypes.enableReview]: authenticateAction(

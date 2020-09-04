@@ -35,9 +35,10 @@
             ><router-link
               :to="{ name: 'StudentAttempt', params: { stagingQuizzesId: id } }"
               replace
-              >View student attempt</router-link
+              >Student attempts</router-link
             >
           </a-button>
+
           <a-popconfirm
             title="Sure to cancel this quiz?"
             @confirm="() => handleCancel(id)"
@@ -45,6 +46,12 @@
             <a-button type="danger" icon="delete"></a-button>
           </a-popconfirm>
         </div>
+        <!-- <a-button
+          @click="() => handleExport(id)"
+          icon="download"
+          :style="{ marginTop: '1em' }"
+          >Export student's attempts to excel
+        </a-button> -->
       </template>
     </a-table>
     <a-pagination
@@ -61,6 +68,7 @@
 
 <script>
 import { actionTypes } from "../store/actions/quizAction";
+import { saveAs } from "file-saver";
 import {
   Table,
   Tag,
@@ -204,6 +212,19 @@ export default {
         duration: 3,
       });
       this.loadLaunchQuiz();
+    },
+    async handleExport(stagingQuizzesId) {
+      message.loading({ content: "Generating file...", key: "generate" });
+      const data = await this.$store.dispatch(actionTypes.exportToExcel, {
+        userId: this.userId,
+        stagingQuizzesId,
+      });
+      message.success({
+        content: "Successfully generated!",
+        key: "generate",
+        duration: 3,
+      });
+      saveAs(data, "file.xlsx");
     },
   },
 };
