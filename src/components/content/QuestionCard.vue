@@ -34,7 +34,7 @@
           :style="{ borderRadius: '3px', width: '200px' }"
         />
         <prism-editor
-          v-if="question.codeContent"
+          v-if="question.codeContent && question.codeContent.length"
           class="my-editor"
           :code="question.codeContent"
           :highlight="highlighter"

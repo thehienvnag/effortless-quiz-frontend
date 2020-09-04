@@ -91,7 +91,7 @@
             </a-col>
           </a-row>
         </div>
-        <div :style="{ marginTop: '15px' }" v-if="inputCode">
+        <div :style="{ marginTop: '15px' }" v-if="code && code.length">
           <h4>Code <span :style="{ color: 'red' }">(*)</span></h4>
           <prism-editor
             class="my-editor"
@@ -248,6 +248,10 @@ export default {
     provideInputCode() {
       this.inputCode = true;
       this.code = 'console.log("Hello World")';
+      this.$emit("saveQuestion", {
+        quizPos: this.quizPos,
+        code: code,
+      });
     },
     disableInputCode() {
       this.inputCode = false;
