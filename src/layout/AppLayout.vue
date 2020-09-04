@@ -28,7 +28,7 @@
         borderTop: '1px solid #e8e8e8',
       }"
     >
-      Ant Design ©2018 Created by Ant UED
+      Effortless Quiz ©2018 Created by HienHT
     </a-layout-footer>
   </a-layout>
 </template>
