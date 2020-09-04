@@ -23,6 +23,7 @@ export const actions = {
   },
   [actionTypes.saveQuizQuestions]: authenticateAction(
     async ({ commit }, { userId, quizId, questions }) => {
+      console.log(questions);
       const uri = `users/${userId}/quizzes/${quizId}/questions`;
       const { data } = await axiosInstance.post(uri, { questions: questions });
       commit(SAVE_ALL_QUESTIONS, data);
