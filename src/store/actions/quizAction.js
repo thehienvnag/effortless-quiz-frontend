@@ -7,6 +7,8 @@ const {
   SAVE_CURRENT_QUESTION,
   SAVE_LAUNCH_QUIZZES,
   SAVE_STUDENT_ANSWER,
+  SAVE_STUDENT_ATTEMPT_LIST,
+  SAVE_NUMBER_QUESTION,
   //    ADD_QUIZ
 } = mutationTypes;
 
@@ -23,6 +25,12 @@ export const actionTypes = {
   checkAnswer: "checkAnswer",
   changeQuestion: "changeQuestion",
   submitAttempt: "submitAttempt",
+  saveNumberOfQuestion: "saveNumberOfQuestion",
+  loadStudentAttemptList: "loadStudentAttemptList",
+  enableReview: "enableReview",
+  cancelQuiz: "cancelQuiz",
+  disableQuiz: "disableQuiz",
+  loadStudentAttemptListOfQuiz: "loadStudentAttemptListOfQuiz",
 };
 export const actions = {
   [actionTypes.loadQuizzes]: authenticateAction(
@@ -55,14 +63,16 @@ export const actions = {
       return data;
     }
   ),
+  [actionTypes.disableQuiz]: authenticateAction(async (context, { quizId }) => {
+    const userId = getCookie("userId");
+    const uri = `users/${userId}/quizzes/${quizId}?disabled=true`;
+    const { data } = await axiosInstance.put(uri);
+    return data;
+  }),
   [actionTypes.takeQuiz]: authenticateAction(
-    async ({ commit, state }, { userId, quizCred }) => {
+    async (context, { userId, quizCred }) => {
       const uri = `users/${userId}/take-quiz`;
       const { data } = await axiosInstance.put(uri, quizCred);
-      commit(SAVE_STUDENT_ATTEMPT, data);
-      if (state.studentAttempt) {
-        commit(SAVE_CURRENT_QUESTION);
-      }
       return data;
     }
   ),
@@ -87,14 +97,17 @@ export const actions = {
       const uri = `users/${userId}/studentAttempts/${attemptId}`;
       const { data } = await axiosInstance.get(uri);
       commit(SAVE_STUDENT_ATTEMPT, data);
-      if (state.studentAttempt) {
+      if (state.studentAttempt && pos !== -1) {
         commit(SAVE_CURRENT_QUESTION, pos);
       }
     }
   ),
   [actionTypes.checkAnswer]: authenticateAction(
-    ({ commit, state }, { attemptId, userId, quesId, answerId }) => {
-      commit(SAVE_STUDENT_ANSWER, { quesId, answerId });
+    (
+      { commit, state },
+      { attemptId, userId, quesId, answerId, questionTypeId }
+    ) => {
+      commit(SAVE_STUDENT_ANSWER, { quesId, answerId, questionTypeId });
       const uri = `users/${userId}/studentAttempt/${attemptId}/studentQuestions/${quesId}`;
       let chosenAnswerId = state.currentQuestion.chosenAnswerId;
       if (!chosenAnswerId.length) {
@@ -106,13 +119,45 @@ export const actions = {
     }
   ),
   [actionTypes.submitAttempt]: authenticateAction(
-    async (state, { userId, attemptId }) => {
+    async ({ commit }, { userId, attemptId }) => {
       const uri = `users/${userId}/studentAttempt/${attemptId}`;
       const { data } = await axiosInstance.put(uri);
+      commit(SAVE_STUDENT_ATTEMPT_LIST, {
+        content: [data],
+      });
       return data;
+    }
+  ),
+  [actionTypes.loadStudentAttemptList]: authenticateAction(
+    async ({ commit }, { userId }) => {
+      const uri = `users/${userId}/studentAttempts`;
+      const { data } = await axiosInstance.get(uri);
+      commit(SAVE_STUDENT_ATTEMPT_LIST, data);
+    }
+  ),
+  [actionTypes.loadStudentAttemptListOfQuiz]: authenticateAction(
+    async ({ commit }, { userId, stagingQuizzesId, page = 0, size = 5 }) => {
+      const uri = `users/${userId}/stagingQuizzes/${stagingQuizzesId}/studentAttempts?page=${page}&size=${size}`;
+      const { data } = await axiosInstance.get(uri);
+      commit(SAVE_STUDENT_ATTEMPT_LIST, data);
+    }
+  ),
+  [actionTypes.enableReview]: authenticateAction(
+    async (context, { userId, stagingQuizzesId }) => {
+      const uri = `users/${userId}/stagingQuizzes/${stagingQuizzesId}?reviewable=true`;
+      await axiosInstance.put(uri);
+    }
+  ),
+  [actionTypes.cancelQuiz]: authenticateAction(
+    async (context, { userId, stagingQuizzesId }) => {
+      const uri = `users/${userId}/stagingQuizzes/${stagingQuizzesId}?cancelable=true`;
+      await axiosInstance.put(uri);
     }
   ),
   [actionTypes.changeQuestion]: ({ commit }, pos) => {
     commit(SAVE_CURRENT_QUESTION, pos);
+  },
+  [actionTypes.saveNumberOfQuestion]: ({ commit }, num) => {
+    commit(SAVE_NUMBER_QUESTION, num);
   },
 };

@@ -39,17 +39,21 @@ export const mutations = {
       );
   },
   [mutationTypes.SAVE_ALL_QUESTIONS]: (state, questions) => {
-    state.questionList = questions.map(({ id, question }) =>
-      Object.assign(question, {
-        quizQuestionId: id,
-        contentValue: question.content,
-        options: question.answerList.map((ans) => ({
-          value: ans.content,
-        })),
-        value: question.answerList
-          .filter((ans) => ans.correct)
-          .map((ans) => ans.content),
-      })
-    );
+    if (!questions) {
+      state.questionList = [];
+    } else {
+      state.questionList = questions.map(({ id, question }) =>
+        Object.assign(question, {
+          quizQuestionId: id,
+          contentValue: question.content,
+          options: question.answerList.map((ans) => ({
+            value: ans.content,
+          })),
+          value: question.answerList
+            .filter((ans) => ans.correct)
+            .map((ans) => ans.content),
+        })
+      );
+    }
   },
 };

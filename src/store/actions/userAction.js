@@ -8,7 +8,7 @@ const {
   SAVE_USER,
   REMOVE_USER,
   SAVE_USER_LIST,
-  UPDATE_USER_ROLE,
+  //UPDATE_USER_ROLE,
 } = mutationTypes;
 
 export const actionTypes = {
@@ -29,14 +29,16 @@ export const actions = {
     if (accessToken)
       axiosInstance.defaults.headers.authorization = `Bearer ${accessToken}`;
     commit(SAVE_USER, data);
-    console.log(document.cookie);
     return data;
   },
-  [actionTypes.logUserInWithFacebook]: async ({ commit }, accessToken) => {
-    const facebookURI = `?access_token=${accessToken}`;
+  [actionTypes.logUserInWithFacebook]: async ({ commit }, accessTokenFB) => {
+    const facebookURI = `?access_token=${accessTokenFB}`;
     const requestData = await fbAxiosInstance.get(facebookURI);
     const uri = `auth/login-with-facebook`;
     const { data } = await axiosInstance.post(uri, requestData.data);
+    const { accessToken } = data;
+    if (accessToken)
+      axiosInstance.defaults.headers.authorization = `Bearer ${accessToken}`;
     commit(SAVE_USER, data);
     return data;
   },
@@ -50,7 +52,10 @@ export const actions = {
     const { id } = state.currentUser;
     const uri = `auth/users/${id}`;
     const { data } = await axiosInstance.put(uri, role);
-    commit(UPDATE_USER_ROLE, data);
+    const { accessToken } = data;
+    if (accessToken)
+      axiosInstance.defaults.headers.authorization = `Bearer ${accessToken}`;
+    commit(SAVE_USER, data);
   },
   [actionTypes.logUserOut]: async ({ commit, state }) => {
     await wait(700);
@@ -65,6 +70,9 @@ export const actions = {
     if (userId) {
       const uri = `users/${userId}`;
       const { data } = await axiosInstance.get(uri);
+      const { accessToken } = data;
+      if (accessToken)
+        axiosInstance.defaults.headers.authorization = `Bearer ${accessToken}`;
       commit(SAVE_USER, data);
     }
   }),

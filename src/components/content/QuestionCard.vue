@@ -22,7 +22,9 @@
               :style="{ marginRight: '0.3em', fontSize: '1.2em' }"
             />Question {{ ques.pos }}.
           </span>
-          <small :style="{ fontWeight: 'normal' }">1 points</small>
+          <small :style="{ fontWeight: 'normal' }"
+            >{{ ques.pointEarned }} / 1 point</small
+          >
         </h5>
         <p>{{ question.content }}</p>
         <img
@@ -40,14 +42,17 @@
           :readonly="true"
         ></prism-editor>
         <answer-choice
+          :questionDisabled="questionDisabled"
           v-for="(ans, i) in question.answerList"
           :key="i"
           :ans="ans"
           :index="i"
           :chosenAnswerId="chosenAnswerId"
           @checkAnswer="handleCheckAnswer"
+          :questionTypeId="question.questionTypeId"
         ></answer-choice>
         <a-pagination
+          v-if="!questionDisabled"
           :style="{ textAlign: 'center', marginTop: '1.5em' }"
           :default-current="pos * 1"
           :total="studentAttemptPos.length"
@@ -94,6 +99,7 @@ export default {
       },
     };
   },
+  props: ["startTimer", "questionArg", "questionDisabled"],
   computed: {
     question() {
       return this.ques.questionInQuiz.question;
@@ -102,15 +108,23 @@ export default {
       return this.ques.chosenAnswerId;
     },
     ques() {
+      if (this.questionArg) {
+        return this.questionArg;
+      }
       return this.$store.state.quizStore.currentQuestion;
     },
     studentAttemptPos() {
-      return this.$store.state.quizStore.studentAttempt.studentQuestionList.map(
-        ({ pos, chosenAnswerId }) => ({
-          chosenAnswerId: chosenAnswerId,
-          pos: pos + "",
-        })
-      );
+      return this.studentAttempt
+        ? this.studentAttempt.studentQuestionList.map(
+            ({ pos, chosenAnswerId }) => ({
+              chosenAnswerId: chosenAnswerId,
+              pos: pos + "",
+            })
+          )
+        : null;
+    },
+    studentAttempt() {
+      return this.$store.state.quizStore.studentAttempt;
     },
     currentUser() {
       return this.$store.state.userStore.currentUser;
@@ -126,18 +140,27 @@ export default {
     },
   },
   created() {
-    this.loadStudentAttempt();
+    if (this.studentAttempt && this.startTimer) {
+      this.isLoading = false;
+      this.startTimer();
+    } else {
+      this.loadStudentAttempt();
+    }
   },
   watch: {
     currentUser() {
       this.loadStudentAttempt();
     },
     ques() {
-      console.log("deactivate loading!");
       this.isLoading = false;
     },
     pos() {
       this.$store.dispatch(actionTypes.changeQuestion, this.pos);
+      this.showDoneIcon();
+    },
+  },
+  methods: {
+    showDoneIcon() {
       const pageItems = Array.from(document.querySelectorAll("li[title]"));
       pageItems.forEach((item) => {
         const studentAttemptPos = this.studentAttemptPos.find(
@@ -157,29 +180,42 @@ export default {
         }
       });
     },
-  },
-  methods: {
     onChange(e) {
       this.radioValue = e.target.value;
     },
     highlighter(code) {
       return highlight(code, languages.clike); // languages.<insert language> to return html with markup
     },
-    handleCheckAnswer(answerId) {
+    handleCheckAnswer({ answerId, questionTypeId }) {
       this.$store.dispatch(actionTypes.checkAnswer, {
         userId: this.userId,
         attemptId: this.attemptId,
         quesId: this.ques.id,
         answerId: answerId,
+        questionTypeId: questionTypeId,
       });
+      this.showDoneIcon();
     },
     async loadStudentAttempt() {
-      if (!this.studentAttempt && this.userId && this.attemptId) {
+      if (this.questionArg) {
+        this.isLoading = false;
+        return;
+      }
+      if (
+        !this.questionDisabled &&
+        !this.studentAttempt &&
+        this.userId &&
+        this.attemptId
+      ) {
         await this.$store.dispatch(actionTypes.loadStudentAttempt, {
           userId: this.userId,
           attemptId: this.attemptId,
           pos: this.$route.params.pos,
         });
+        if (this.studentAttempt && this.startTimer) {
+          this.isLoading = false;
+          this.startTimer();
+        }
       }
     },
     onChangePage(e) {

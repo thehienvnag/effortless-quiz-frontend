@@ -7,7 +7,10 @@ export const quizModule = {
     studentAttempt: null,
     currentQuestion: null,
     launchQuizzes: null,
+    studentAttemptList: null,
+    numberOfQuestion: null
   },
   mutations: mutations,
   actions: actions,
+  
 };

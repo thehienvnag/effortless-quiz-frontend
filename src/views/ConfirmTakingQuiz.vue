@@ -1,46 +1,53 @@
 <template>
-  <a-card
-    title="Join Quiz"
-    :bordered="false"
-    :style="{ width: '50%', margin: '0 auto', marginTop: '15px' }"
-  >
-    <a-form-item label="Quiz Code">
-      <a-input @change="onChangeQuizCode" />
-    </a-form-item>
+  <div>
+    <prepare-quiz v-if="!showContent"></prepare-quiz>
+    <a-card
+      v-if="showContent"
+      title="Join Quiz"
+      :bordered="false"
+      :style="{ width: '50%', margin: '2em auto', marginTop: '15px', padding: '2em' }"
+    >
+      <div :style="{ width: '90%', margin: '0 auto' }">
+        <a-form-item label="Quiz Code" :style="{ marginBottom: '5px' }">
+          <a-input @change="onChangeQuizCode" />
+        </a-form-item>
+        <a-button
+          :loading="findLoading"
+          type="primary"
+          icon="search"
+          @click="handleSubmit"
+          >Find Quiz</a-button
+        >
+      </div>
 
-    <a-button
-      :loading="findLoading"
-      type="primary"
-      icon="search"
-      @click="handleSubmit"
-      >Find Quiz</a-button
-    >
-    <a-table
-      :style="{ marginTop: '2em' }"
-      :columns="columns"
-      :dataSource="launchQuizzes"
-      :pagination="false"
-      :loading="tableLoading"
-    >
-      <template slot="operation" slot-scope="id">
-        <div :style="{ display: 'flex' }">
-          <a-popconfirm
-            placement="topLeft"
-            ok-text="JOIN"
-            @confirm="(e) => onJoinQuiz(id, e)"
-          >
-            <div slot="title">
-              <h3>Join this Quiz</h3>
-              <a-input type="password" placeholder="Enter quiz password" />
-            </div>
-            <a-button>
-              Join Now
-            </a-button>
-          </a-popconfirm>
-        </div>
-      </template>
-    </a-table>
-  </a-card>
+      <a-table
+        v-if="tableAppear"
+        :style="{ marginTop: '2em' }"
+        :columns="columns"
+        :dataSource="launchQuizzes"
+        :pagination="false"
+        :loading="tableLoading"
+      >
+        <template slot="operation" slot-scope="id">
+          <div :style="{ display: 'flex' }">
+            <a-popconfirm
+              placement="topLeft"
+              ok-text="JOIN"
+              @confirm="(e) => onJoinQuiz(id, e)"
+            >
+              <div slot="title">
+                <h3>Join this Quiz</h3>
+                <a-input type="password" placeholder="Enter quiz password" />
+              </div>
+              <a-button>
+                Join Now
+              </a-button>
+            </a-popconfirm>
+          </div>
+        </template>
+      </a-table>
+    </a-card>
+  </div>
 </template>
 
 <script>
@@ -90,6 +97,8 @@ export default {
       findLoading: false,
       quizCode: null,
       visible: false,
+      tableAppear: false,
+      showContent: true,
     };
   },
   beforeCreate() {
@@ -100,7 +109,7 @@ export default {
       return this.$store.state.userStore.currentUser;
     },
     userId() {
-      return this.currentUser.id;
+      return this.currentUser && this.currentUser.id;
     },
     quizzes() {
       return this.$store.state.quizStore.launchQuizzes;
@@ -116,6 +125,7 @@ export default {
     async handleSubmit() {
       this.findLoading = true;
       this.tableLoading = true;
+      this.tableAppear = true;
       await this.$store.dispatch(actionTypes.loadLaunchingQuizzes, {
         userId: this.userId,
         quizCode: this.quizCode,
@@ -128,18 +138,35 @@ export default {
       const inputEle = e.target.parentElement.parentElement.querySelector(
         "input[type='password']"
       );
-      const data = await this.$store.dispatch(actionTypes.takeQuiz, {
-        userId: this.userId,
-        quizCred: {
-          stagingQuizzesId: id,
-          quizPassword: inputEle.value,
-        },
-      });
-      if (data) {
-        console.log("redirect");
-        this.$router.push(`/attempts/${data.id}/1`);
+      const pass = inputEle.value;
+      this.showContent = false;
+
+      try {
+        const data = await this.$store.dispatch(actionTypes.takeQuiz, {
+          userId: this.userId,
+          quizCred: {
+            stagingQuizzesId: id,
+            quizPassword: pass,
+          },
+        });
+        if (data.id) {
+          console.log("redirect");
+          await this.loadStudentAttempt(data.id);
+          this.$router.push(`/attempts/${data.id}/1`);
+        }
+      } catch (error) {
+        console.log(error.message);
       }
     },
+    async loadStudentAttempt(attemptId) {
+      await this.$store.dispatch(actionTypes.loadStudentAttempt, {
+        userId: this.userId,
+        attemptId: attemptId,
+      });
+    },
+  },
+  components: {
+    "prepare-quiz": () => import("../components/utils/PrepareQuizSpinner"),
   },
 };
 </script>

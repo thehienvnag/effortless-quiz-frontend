@@ -5,12 +5,13 @@ import { quizModule } from "./modules/quizModule";
 import { questionModule } from "./modules/questionModule"
 Vue.use(Vuex);
 
-export default new Vuex.Store({
+const store = new Vuex.Store({
   modules: {
     userStore: userModule,
     quizStore: quizModule,
     questionStore: questionModule
   },
 });
+export default store;
 
 

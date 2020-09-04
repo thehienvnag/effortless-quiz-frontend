@@ -1,6 +1,7 @@
 import axios from "axios";
 import { getCookie } from "../store/utils/Utilities";
 const baseURL = "https://effortless-quiz-back-end.herokuapp.com/api/";
+// const baseURL = "http://localhost:8888/api/";
 const fbBaseURL = "https://graph.facebook.com/me";
 import { mutationTypes } from "../store/mutations/userMutations";
 
@@ -26,11 +27,16 @@ export const authenticateAction = (callback) => {
   return async (...args) => {
     try {
       return await callback(...args);
-    } catch (err) {
-      console.log(err);
-      if (err.response && err.response.status === 401) {
-        refreshToken(...args);
-        return await callback(...args);
+    } catch (error) {
+      if (error.response) {
+        if (error.response.status === 401) {
+          refreshToken(...args);
+          return await callback(...args);
+        }
+        console.log(error);
+        if (error.response) {
+          throw new Error(error.response.data);
+        }
       }
     }
   };

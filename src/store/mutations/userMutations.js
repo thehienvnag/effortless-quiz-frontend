@@ -8,8 +8,16 @@ export const mutationTypes = {
 export const mutations = {
   [mutationTypes.SAVE_USER]: (state, data) => {
     const { accessToken, refreshToken, user } = data;
-    if (user) setTokenToCookie(user.id, accessToken, refreshToken);
-    state.currentUser = user || data;
+    let userRole = null;
+    if (user.userRoles && user.userRoles[0]) {
+      userRole = user.userRoles[0].role.name;
+    } else {
+      userRole = "ROLE_NOT_CONFIRMED";
+      user.userRoles = [{ role: { id: 3, name: "ROLE_NOT_CONFIRMED" } }];
+    }
+
+    if (user) setTokenToCookie(user.id, accessToken, refreshToken, userRole);
+    state.currentUser = user;
   },
   [mutationTypes.UPDATE_USER_ROLE]: ({ currentUser }, data) => {
     if (currentUser) {

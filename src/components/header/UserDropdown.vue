@@ -2,9 +2,14 @@
   <a-popover placement="bottom" class="user-section">
     <template slot="content">
       <!-- <p>Content</p> -->
-      <a-button icon="logout" @click="handleLogout" :loading="logoutLoading"
-        >Log Out</a-button
-      >
+      <div :style="{display: 'flex', flexDirection: 'column'}">
+        <a-button v-if="role === 'ROLE_STUDENT'" type="primary">
+          <router-link :to="{ name: 'PastAttempt' }">Past Attempt</router-link>
+        </a-button>
+        <a-button :style="{marginTop: '1em'}" icon="logout" @click="handleLogout" :loading="logoutLoading"
+          >Log Out</a-button
+        >
+      </div>
     </template>
     <template slot="title">
       <span>Account</span>
@@ -40,6 +45,9 @@ export default {
       const name = this.userLoggedIn.name.split(" ");
       return name[name.length - 1].charAt(0);
     },
+    role(){
+      return this.userLoggedIn.userRoles[0].role.name;
+    }
   },
   methods: {
     async handleLogout() {

@@ -1,6 +1,14 @@
 <template>
-  <div>
-    <a-card :style="{ width: '80%', margin: '0 auto', marginTop: '1.5em' }">
+  <div :style="{ padding: '0.5em' }">
+    <launch-quiz ref="launchQuiz"></launch-quiz>
+    <a-card
+      :style="{
+        minWidth: '320px',
+        maxWidth: '800px',
+        margin: '0 auto',
+        marginTop: '1.5em',
+      }"
+    >
       <div
         slot="title"
         :style="{ display: 'flex', justifyContent: 'space-between' }"
@@ -13,6 +21,7 @@
               fontSize: '1.2em',
               marginRight: '10px',
             }"
+            placeholder="Your quiz code"
             :disabled="quizCodeDisabled"
             @pressEnter="handleEnterPresses"
             @change="handleChange"
@@ -35,6 +44,7 @@
           :style="{ width: '120px', height: '35px', fontSize: '1.1em' }"
           icon="play-circle"
           type="primary"
+          @click="handleLaunchQuiz"
           >Launch</a-button
         >
       </div>
@@ -61,6 +71,7 @@ import {
   Collapse,
   Divider,
   Card,
+  notification,
 } from "ant-design-vue";
 import Vue from "vue";
 Vue.use(Icon)
@@ -77,7 +88,7 @@ export default {
     return {
       quizInfo: null,
       quizCodeDisabled: true,
-      quizCodeValue: "Your Quiz Code",
+      quizCodeValue: null,
       quizCodeError: false,
       cardLoading: true,
       value: [],
@@ -85,6 +96,8 @@ export default {
       idParam: null,
       isNewQuiz: true,
       collapseDisabled: false,
+      quizCodeRequired: false,
+      countQuestionInQuiz: null,
     };
   },
 
@@ -94,6 +107,9 @@ export default {
     },
     currentUser() {
       return this.$store.state.userStore.currentUser;
+    },
+    quizId() {
+      return this.$route.params.id;
     },
   },
   created() {
@@ -121,16 +137,15 @@ export default {
       }
     },
     async loadQuizDetails() {
-      this.idParam = this.$route.params.id;
-      if (this.idParam === "new") {
+      if (this.quizId === "new") {
         this.cardLoading = false;
       } else {
         const { data } = await this.$store.dispatch(actionTypes.loadQuizById, {
           userId: this.userId,
-          quizId: this.idParam,
+          quizId: this.quizId,
         });
-        console.log(data);
         const { subjects, quizCode, countQuestionInQuiz } = data;
+        this.countQuestionInQuiz = countQuestionInQuiz;
         this.value = [
           {
             key: subjects.id,
@@ -145,12 +160,33 @@ export default {
       }
     },
     saveQuizInfo() {
-      this.$refs.quizInfo.onSubmit();
+      if (this.quizCodeValue) {
+        this.$refs.quizInfo.onSubmit();
+        this.quizCodeRequired = false;
+      } else {
+        this.quizCodeRequired = true;
+      }
+    },
+    handleLaunchQuiz() {
+      if (this.quizId !== "new") {
+        this.$refs.launchQuiz.openModal(this.quizId);
+      } else {
+        let message = "Quiz has not been saved!";
+        if (this.quizId && this.countQuestionInQuiz === 0) {
+          message = "No questions to launch! Save and try again!";
+        }
+        notification.open({
+          message: "Invalid launch quiz",
+          description: message,
+          icon: <a-icon type="warning" style="color: red" />,
+        });
+      }
     },
   },
   components: {
     "quiz-info": () => import("../components/content/forms/QuizInfo"),
     "manage-questions": () => import("../components/content/ManageQuestions"),
+    "launch-quiz": () => import("../components/content/forms/LaunchQuizForm"),
   },
 };
 </script>

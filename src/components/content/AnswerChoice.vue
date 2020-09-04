@@ -16,12 +16,25 @@
       }"
     >
       <a-button
-        
         @click="onChecked"
-        :style="{ display: 'inline-block', margin: 0, padding: '0 0.8em' }"
+        :shape="btnShape"
+        :style="{ display: 'inline-block', margin: 0 }"
         :type="btnType"
-        >{{ alphabet }}</a-button
       >
+        <span v-if="!isReviewDisplay || (!ans.correct && !chosenAnswerId )">{{ alphabet }}</span>
+        <span v-if="isReviewDisplay">
+          <a-icon
+            type="check"
+            v-if="ans.correct"
+            :style="{ color: '#81c784' }"
+          />
+          <a-icon
+            type="close"
+            v-if="!ans.correct && chosenAnswerId"
+            :style="{ color: '#ff5252' }"
+          />
+        </span>
+      </a-button>
     </span>
     <span
       :style="{
@@ -53,27 +66,55 @@ export default {
   data() {
     return {
       charCode: 65,
+      btnShape: null,
     };
+  },
+  created() {
+    if (this.questionTypeId === 2) {
+      this.btnShape = "circle";
+    }
   },
   computed: {
     alphabet() {
       return String.fromCharCode(this.charCode + this.index);
     },
     btnType() {
-      console.log(this.chosenAnswerId);
+      if (this.questionDisabled) {
+        return "default";
+      }
       return this.chosenAnswerId
         ? this.chosenAnswerId.includes(this.ans.id + "")
           ? "primary"
           : "default"
         : "default";
     },
+    isReviewDisplay() {
+      if(!this.chosenAnswerId){
+        return true;
+      }
+      return (
+        this.questionDisabled && this.chosenAnswerId.includes(this.ans.id + "")
+      );
+    },
   },
   methods: {
     onChecked() {
-      this.$emit("checkAnswer", this.ans.id + "");
+      if (!this.questionDisabled) {
+        console.log("checked");
+        this.$emit("checkAnswer", {
+          answerId: this.ans.id + "",
+          questionTypeId: this.questionTypeId,
+        });
+      }
     },
   },
-  props: ["ans", "index", "chosenAnswerId"],
+  props: [
+    "ans",
+    "index",
+    "chosenAnswerId",
+    "questionDisabled",
+    "questionTypeId",
+  ],
 };
 </script>
 

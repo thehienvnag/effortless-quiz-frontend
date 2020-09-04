@@ -39,6 +39,9 @@
         :auto-size="{ maxRows: 10 }"
         :value="contentValue"
       />
+      <p v-if="contentRequired" :style="{ color: 'red' }">
+        This field is required!
+      </p>
       <div v-if="showOptional">
         <a-divider :style="{ height: '1.1px' }"></a-divider>
         <div :style="{ marginTop: '15px' }">
@@ -114,7 +117,7 @@
           }
         "
         @pressEnter="addOption"
-        :style="{ marginLeft: '10px', width: '200px' }"
+        :style="{ marginLeft: '10px', maxWidth: '200px' }"
         placeholder="Enter answer"
       />
       <a-button
@@ -123,6 +126,14 @@
         block
         @click="addOption"
       ></a-button>
+      <div :style="{ paddingTop: '10px' }">
+        <p v-if="requiredAnswer" :style="{ color: 'red' }">
+          Answer field is required!
+        </p>
+        <p v-if="duplicateAnswer" :style="{ color: 'red' }">
+          Answer field should not be duplicated!
+        </p>
+      </div>
     </div>
     <p :style="{ marginTop: '10px' }">
       - Specify correct answers by checking!!
@@ -211,6 +222,9 @@ export default {
       answerInput: "",
       contentValue: "",
       imageLink: null,
+      requiredAnswer: false,
+      duplicateAnswer: false,
+      contentRequired: false,
     };
   },
   props: ["question"],
@@ -281,15 +295,27 @@ export default {
     },
     addOption() {
       const ansValue = this.answerInput.trim();
-      const isValid =
-        ansValue.length &&
-        this.options.findIndex((opt) => opt.value == ansValue) === -1;
+      let isValid = true;
+      if (!ansValue.length) {
+        this.requiredAnswer = true;
+        isValid = false;
+      }
+      if (
+        this.options.length &&
+        this.options.findIndex((opt) => opt.value == ansValue) !== -1
+      ) {
+        this.duplicateAnswer = true;
+        isValid = false;
+      }
+
       if (isValid) {
         this.options.push({ value: ansValue });
         this.$emit("saveQuestion", {
           quizPos: this.quizPos,
           options: this.options,
         });
+        this.duplicateAnswer = false;
+        this.requiredAnswer = false;
       }
     },
     removeOption(value) {
@@ -301,10 +327,15 @@ export default {
     },
     handleChangeContent(e) {
       this.contentValue = e.target.value.trim();
-      this.$emit("saveQuestion", {
-        quizPos: this.quizPos,
-        contentValue: this.contentValue,
-      });
+      if (!this.contentValue.length) {
+        this.contentRequired = true;
+      } else {
+        this.$emit("saveQuestion", {
+          quizPos: this.quizPos,
+          contentValue: this.contentValue,
+        });
+        this.contentRequired = false;
+      }
     },
     handleDeleteQuestion() {
       this.$store.dispatch(actionTypes.removeQuestion, this.quizPos);

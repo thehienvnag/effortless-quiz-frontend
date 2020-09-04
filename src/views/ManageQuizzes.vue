@@ -42,6 +42,11 @@
         </a-tag>
         <p>{{ record.subjects.name }}</p>
       </template>
+      <template slot="status" slot-scope="statusId, { statusName }">
+        <a-tag :color="statusColor[statusId]">
+          {{ statusName.toUpperCase() }}
+        </a-tag>
+      </template>
       <template slot="operation" slot-scope="text, record">
         <div :style="{ display: 'flex', marginBottom: '1em' }">
           <a-button
@@ -116,6 +121,10 @@ Vue.use(Table)
   .use(Col)
   .use(Tag);
 import { actionTypes } from "../store/actions/quizAction";
+const statusColor = {
+  1: "green",
+  2: "red",
+};
 const columns = [
   {
     title: "Quiz Code",
@@ -127,15 +136,17 @@ const columns = [
     key: "subject",
     scopedSlots: { customRender: "subjectTag" },
   },
-  // {
-  //   title: "Duration (mins)",
-  //   dataIndex: "duration",
-  //   key: "duration",
-  // },
+
   {
     title: "Import Date",
     dataIndex: "importDate",
     key: "importDate",
+  },
+  {
+    title: "Status",
+    dataIndex: "statusId",
+    key: "statusId",
+    scopedSlots: { customRender: "status" },
   },
   {
     title: "Operation",
@@ -156,6 +167,7 @@ export default {
       deleteLoading: false,
       visible: false,
       loadingLaunchQuiz: false,
+      statusColor: statusColor,
     };
   },
   computed: {
@@ -167,6 +179,9 @@ export default {
     },
     currentUser() {
       return this.userStore.currentUser;
+    },
+    userId() {
+      return this.currentUser && this.currentUser.id;
     },
   },
   created() {
@@ -242,9 +257,8 @@ export default {
         this.searchLoading = false;
       }
     },
-    async onDelete(key) {
-      console.log(key);
-      //await this.$store.dispatch(deleteStudent, key);
+    async onDelete(quizId) {
+      await this.$store.dispatch(actionTypes.disableQuiz, { quizId });
       await this.refreshTableData();
     },
     async onChangePage(page) {
@@ -263,10 +277,10 @@ export default {
     },
     handleSubmit() {},
     goQuizDetails() {
-      this.$router.push("/quizzes/new");
+      this.$router.push({ name: "QuizDetail", params: { id: "new" } });
     },
     handleEdit(id) {
-      this.$router.push(`/quizzes/${id}`);
+      this.$router.push({ name: "QuizDetail", params: { id } });
     },
   },
   components: {

@@ -1,6 +1,6 @@
 <template>
   <a-layout id="components-layout-demo-side" style="min-height: 100vh">
-    <a-layout-sider
+    <!-- <a-layout-sider
       v-if="!isAttemptRoute"
       v-model="collapsed"
       collapsible
@@ -8,17 +8,22 @@
     >
       <a-side-bar :collapsed="collapsed"></a-side-bar>
     </a-layout-sider>
-    <a-layout>
-      <a-layout-header class="header" theme="light">
-        <a-header-menu></a-header-menu>
-      </a-layout-header>
-      <a-layout-content style="margin: 0 16px">
-        <router-view />
-      </a-layout-content>
-      <a-layout-footer style="text-align: center">
-        Ant Design ©2018 Created by Ant UED
-      </a-layout-footer>
-    </a-layout>
+    <a-layout> </a-layout> -->
+    <a-layout-header
+      class="header"
+      theme="light"
+      :style="{ position: 'fixed', top: 0, width: '100%', zIndex: 6 }"
+    >
+      <a-header-menu></a-header-menu>
+    </a-layout-header>
+    <a-layout-content
+      :style="{ backgroundColor: '#1abc9c', marginTop: '60px' }"
+    >
+      <router-view />
+    </a-layout-content>
+    <a-layout-footer :style="{ textAlign: 'center', backgroundColor: 'white' }">
+      Ant Design ©2018 Created by Ant UED
+    </a-layout-footer>
   </a-layout>
 </template>
 
@@ -45,7 +50,7 @@ export default {
     },
   },
   components: {
-    "a-side-bar": () => import("../layout/SideBar"),
+    //"a-side-bar": () => import("../layout/SideBar"),
     "a-header-menu": () => import("../components/header/HeaderMenu"),
   },
   watch: {

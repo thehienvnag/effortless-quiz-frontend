@@ -1,21 +1,40 @@
 <template>
-  <div :style="{ width: '70%', margin: '0 auto' }">
-    <a-button
-      v-if="!loadingQuestions"
-      @click="handleClick"
-      icon="plus-circle"
-      :style="{ width: '170px', margin: '10px 0' }"
-      >Add more question</a-button
+  <div :style="{ padding: '1em' }">
+    <div
+      v-if="quizId !== 'new'"
+      :style="{
+        backgroundColor: 'white',
+        padding: '0.5em 0.4em',
+        width: '80px',
+        borderRadius: '5px',
+        fontSize: '1.3em',
+        position: 'fixed',
+        top: '40%',
+        left: '17%',
+        border: '2px solid #f6f7f8',
+        zIndex: 5,
+      }"
     >
-    <a-button
-      v-if="!loadingQuestions"
-      :loading="saveAllLoading"
-      type="primary"
-      @click="handleSaveAllQuestion"
-      icon="save"
-      :style="{ marginLeft: '10px' }"
-      >Save All</a-button
-    >
+      <a-button
+        block
+        v-if="!loadingQuestions"
+        @click="handleClick"
+        icon="plus-circle"
+        size="large"
+        :style="{ marginRight: 0, width: '60px' }"
+      ></a-button>
+      <a-button
+        block
+        v-if="!loadingQuestions"
+        :loading="saveAllLoading"
+        @click="handleSaveAllQuestion"
+        type="primary"
+        icon="save"
+        size="large"
+        :style="{ marginTop: '5px', marginRight: 0, width: '60px' }"
+      ></a-button>
+    </div>
+
     <div v-if="loadingQuestions" :style="skeletonStyle">
       <a-skeleton active />
     </div>
@@ -27,6 +46,7 @@
     </div>
     <div v-if="!loadingQuestions">
       <question-details
+        :style="{ minWidth: '300px', maxWidth: '700px' }"
         v-for="ques in questionList"
         :key="ques.quizPos"
         :question="ques.question || ques"
@@ -35,7 +55,7 @@
     </div>
     <a-divider
       v-if="questionList && questionList.length"
-      :style="{ height: '2px', borderColor: 'black' }"
+      :style="{ color: 'white' }"
       >END</a-divider
     >
   </div>
@@ -52,7 +72,6 @@ Vue.use(Collapse)
 export default {
   data() {
     return {
-      quizId: null,
       saveAllLoading: false,
       loadingQuestions: false,
       skeletonStyle: {
@@ -63,8 +82,7 @@ export default {
     };
   },
   components: {
-    "question-details": () =>
-      import("../content/forms/QuestionDetails"),
+    "question-details": () => import("../content/forms/QuestionDetails"),
   },
   computed: {
     questionList() {
@@ -73,29 +91,34 @@ export default {
     userId() {
       return this.$store.state.userStore.currentUser.id;
     },
-    currentUser(){
+    currentUser() {
       return this.$store.state.userStore.currentUser;
-    }
+    },
+    quizId() {
+      return this.$route.params.id;
+    },
   },
-  created(){
+  created() {
     this.loadQuestions();
   },
   watch: {
-    currentUser(){
+    currentUser() {
       this.loadQuestions();
-    }
+    },
   },
   methods: {
     async loadQuestions() {
-      this.quizId = this.$route.params.id;
-      const type = this.$route.params.type;
-      if (this.userId && !type || type !== "new" ) {
+      if (this.quizId && this.quizId === "new") {
+        console.log(this.$store);
+        this.$store.commit("SAVE_ALL_QUESTIONS", null);
+      }
+      if (this.quizId && this.quizId !== "new") {
         this.loadingQuestions = true;
         await this.$store.dispatch(actionTypes.loadQuestionsByQuizId, {
           userId: this.userId,
           quizId: this.quizId,
         });
-        console.log(this.questionList);
+        this.questionList;
         this.loadingQuestions = false;
       }
     },
@@ -143,7 +166,7 @@ export default {
         quizId: this.quizId,
         questions: requestData,
       });
-      console.log(data);
+      data;
       this.saveAllLoading = false;
     },
   },

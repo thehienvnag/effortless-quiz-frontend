@@ -175,11 +175,23 @@ export default {
           delete requestData["quizTimeRange"];
           this.loadingLaunchQuiz = true;
           message.loading({ content: "Launching quiz", key: "Loading" });
-          await this.$store.dispatch(actionTypes.launchQuiz, {
-            quizId: this.quizId,
-            launchQuizInfo: requestData,
-          });
-          message.success({ content: "Successfully launched quiz!", key: "Insertable" });
+          try {
+            await this.$store.dispatch(actionTypes.launchQuiz, {
+              quizId: this.quizId,
+              launchQuizInfo: requestData,
+            });
+            message.success({
+              content: "Successfully launched quiz!",
+              key: "Loading",
+              duration: 2,
+            });
+          } catch (error) {
+            message.error({
+              content: error.message,
+              key: "Loading",
+              duration: 2,
+            });
+          }
           this.loadingLaunchQuiz = false;
           this.handleCancel();
         }

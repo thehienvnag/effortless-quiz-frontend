@@ -8,23 +8,27 @@
         marginTop: '2em',
       }"
     >
-      <h2 :style="{ marginBottom: 0 }">{{ quizCode }} - {{ description }}</h2>
+      <h2 :style="{ marginBottom: 0, color: 'white' }">
+        {{ quizCode }} - {{ description }}
+      </h2>
       <div :style="{ display: 'flex' }">
-        <a-button icon="clock-circle">Remainings </a-button>
-        <span :style="{ marginTop: '5px' }"
-          ><a-icon type="arrow-right" /> {{ timerDisplay }}</span
+        <a-button icon="clock-circle"
+          >Remainings
+          <span :style="{ marginTop: '5px', margin: '0 10px' }"
+            ><a-icon type="arrow-right" /> {{ timerDisplay }}</span
+          ></a-button
         >
+
         <a-button
           :loading="submitLoading"
           @click="handleSubmit"
-          type="primary"
           icon="file-done"
           :style="{ marginLeft: 'auto' }"
           >Submit now</a-button
         >
       </div>
     </div>
-    <question-card></question-card>
+    <question-card :startTimer="startTimer"></question-card>
   </div>
 </template>
 
@@ -39,7 +43,8 @@ export default {
     return {
       quizDuration: null,
       timerDisplay: null,
-      submitLoading: false
+      submitLoading: false,
+      isStart: false,
     };
   },
   computed: {
@@ -62,14 +67,17 @@ export default {
   watch: {
     studentAttempt() {
       this.quizDuration = this.studentAttempt.remainingTime;
-      this.startTimer();
     },
   },
   methods: {
     startTimer() {
+      if (!this.quizDuration) {
+        this.quizDuration = this.studentAttempt.remainingTime;
+      }
       const interval = setInterval(() => {
         if (this.quizDuration <= 0) {
           clearInterval(interval);
+          this.handleSubmit();
         }
         this.quizDuration--;
         this.changeTimerDisplay();
@@ -93,7 +101,9 @@ export default {
         attemptId: this.attemptId,
       });
       this.submitLoading = false;
-      console.log(data);
+      if (data) {
+        this.$router.push({ name: "PastAttempt" });
+      }
     },
   },
   components: {

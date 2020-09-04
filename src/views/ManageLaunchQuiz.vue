@@ -21,14 +21,26 @@
           {{ statusName }}
         </a-tag>
       </template>
-      <template slot="operation">
+      <template slot="operation" slot-scope="id, { reviewable }">
         <div :style="{ display: 'flex' }">
-          <a-button type="default" @click="() => enableReview(record.id)"
-            >Enable review</a-button
+          <a-button
+            :loading="loading"
+            type="default"
+            @click="() => changeReviewStatus(id, reviewable)"
           >
+            <span v-if="!reviewable">Enable review</span>
+            <span v-if="reviewable">Disable review</span>
+          </a-button>
+          <a-button icon="eye"
+            ><router-link
+              :to="{ name: 'StudentAttempt', params: { stagingQuizzesId: id } }"
+              replace
+              >View student attempt</router-link
+            >
+          </a-button>
           <a-popconfirm
             title="Sure to cancel this quiz?"
-            @confirm="() => onCancel(record.id)"
+            @confirm="() => handleCancel(id)"
           >
             <a-button type="danger" icon="delete"></a-button>
           </a-popconfirm>
@@ -49,7 +61,14 @@
 
 <script>
 import { actionTypes } from "../store/actions/quizAction";
-import { Table, Tag, Pagination, Popconfirm, Button } from "ant-design-vue";
+import {
+  Table,
+  Tag,
+  Pagination,
+  Popconfirm,
+  Button,
+  message,
+} from "ant-design-vue";
 import Vue from "vue";
 Vue.use(Table)
   .use(Tag)
@@ -98,6 +117,7 @@ const columns = [
   {
     title: "Operation",
     key: "operation",
+    dataIndex: "id",
     scopedSlots: { customRender: "operation" },
   },
 ];
@@ -108,16 +128,13 @@ export default {
       currentPage: 0,
       statusColor: statusColor,
       columns: columns,
+      loading: false,
+      launchQuizzes: null,
     };
   },
   computed: {
     quizzes() {
       return this.$store.state.quizStore.launchQuizzes;
-    },
-    launchQuizzes() {
-      return this.quizzes
-        ? this.quizzes.content.map((quiz, i) => Object.assign(quiz, { key: i }))
-        : null;
     },
     totalElements() {
       return this.quizzes ? this.quizzes.totalElements : 0;
@@ -139,18 +156,55 @@ export default {
     currentUser() {
       this.loadLaunchQuiz();
     },
+    quizzes() {
+      if (this.quizzes) {
+        this.launchQuizzes = this.quizzes.content.map((quiz, i) =>
+          Object.assign(quiz, { key: i })
+        );
+      }
+    },
   },
   methods: {
     async loadLaunchQuiz() {
-      await this.$store.dispatch(actionTypes.loadLaunchQuizzes, {
+      const data = await this.$store.dispatch(actionTypes.loadLaunchQuizzes, {
         quizId: this.quizId,
         userId: this.userId,
       });
+      this.launchQuizzes = data.content.map((quiz, i) =>
+        Object.assign(quiz, { key: i })
+      );
       this.tableLoading = false;
     },
     onChangePage() {},
-    enableReview() {},
-    onCancel() {},
+    async changeReviewStatus(id, reviewable) {
+      message.loading({
+        content: reviewable ? "Disabling..." : "Enabling...",
+        key: "changing",
+      });
+      await this.$store.dispatch(actionTypes.enableReview, {
+        userId: this.userId,
+        stagingQuizzesId: id,
+      });
+      message.success({
+        content: "Successfully changed!",
+        duration: 3,
+        key: "changing",
+      });
+      this.loadLaunchQuiz();
+    },
+    async handleCancel(stagingQuizzesId) {
+      message.loading({ content: "Cancelling", key: "cancel" });
+      await this.$store.dispatch(actionTypes.cancelQuiz, {
+        userId: this.userId,
+        stagingQuizzesId,
+      });
+      message.success({
+        content: "Successfully canceled!",
+        key: "cancel",
+        duration: 3,
+      });
+      this.loadLaunchQuiz();
+    },
   },
 };
 </script>

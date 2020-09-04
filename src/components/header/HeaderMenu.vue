@@ -1,11 +1,38 @@
 <template>
   <div class="height-100">
     <a-menu class="height-100 text-right" theme="light" mode="horizontal">
-      <a-menu-item key="mail" v-if="studentAllowed">
-        <router-link to="/take-quiz"
-          ><a-icon type="select" />Join Quiz Now - For Student</router-link
-        >
+      <a-menu-item key="home" :style="{ position: 'absolute', left: 0 }">
+        <router-link to="/home">
+          <img
+            :style="{ width: '30px' }"
+            src="../../../public/logo.png"
+            alt="Logo"
+          />
+          <span
+            :style="{
+              fontSize: '1.5em',
+              marginLeft: '0.2em',
+              marginTop: '1em',
+            }"
+            >Effortless <b>QUIZ</b></span
+          >
+        </router-link>
       </a-menu-item>
+      <template v-if="teacherAllowed">
+        <a-menu-item key="quizzes">
+          <router-link to="/quizzes"
+            ><a-icon type="setting" />Manage Quizzes</router-link
+          >
+        </a-menu-item>
+      </template>
+      <template v-if="studentAllowed">
+        <a-menu-item key="joinQuiz" v-if="studentAllowed">
+          <router-link to="/take-quiz"
+            ><a-icon type="select" />Join Quiz Now</router-link
+          >
+        </a-menu-item>
+      </template>
+
       <a-menu-item key="key">
         <user-dropdown
           v-if="currentUser"
@@ -43,7 +70,8 @@ Vue.use(Menu).use(Icon);
 export default {
   data() {
     return {
-      studentAllowed: true,
+      studentAllowed: false,
+      teacherAllowed: false,
     };
   },
   computed: {
@@ -57,10 +85,10 @@ export default {
   },
   watch: {
     currentUser: function() {
-      if (!this.currentUser) this.studentAllowed = true;
-      else
-        this.studentAllowed =
-          this.currentUser.userRoles[0].role.name === "ROLE_STUDENT";
+      this.studentAllowed =
+        this.currentUser.userRoles[0].role.name === "ROLE_STUDENT";
+      this.teacherAllowed =
+        this.currentUser.userRoles[0].role.name === "ROLE_TEACHER";
     },
   },
 };

@@ -5,6 +5,8 @@ export const mutationTypes = {
   SAVE_CURRENT_QUESTION: "SAVE_CURRENT_QUESTION",
   SAVE_LAUNCH_QUIZZES: "SAVE_LAUNCH_QUIZZES",
   SAVE_STUDENT_ANSWER: "SAVE_STUDENT_ANSWER",
+  SAVE_STUDENT_ATTEMPT_LIST: "SAVE_STUDENT_ATTEMPT_LIST",
+  SAVE_NUMBER_QUESTION: "SAVE_NUMBER_QUESTION",
 };
 export const mutations = {
   [mutationTypes.SAVE_QUIZZES]: (state, quizzes) => {
@@ -29,21 +31,28 @@ export const mutations = {
         }
       );
     } else {
-      state.currentQuestion = state.studentAttempt[0];
+      state.currentQuestion = state.studentAttempt.studentQuestionList[0];
     }
   },
   [mutationTypes.SAVE_LAUNCH_QUIZZES]: (state, quizzes) => {
     state.launchQuizzes = quizzes;
   },
-  [mutationTypes.SAVE_STUDENT_ANSWER]: (state, { quesId, answerId }) => {
+  [mutationTypes.SAVE_STUDENT_ANSWER]: (
+    state,
+    { quesId, answerId, questionTypeId }
+  ) => {
     let chosenAnswerId = state.currentQuestion.chosenAnswerId;
-
-    if (chosenAnswerId && chosenAnswerId.includes(answerId)) {
-      chosenAnswerId = chosenAnswerId.replace(`,${answerId}`, "");
+    if (questionTypeId && questionTypeId === 2) {
+      chosenAnswerId = "," + answerId;
     } else {
-      chosenAnswerId += `,${answerId}`;
+      if (chosenAnswerId && chosenAnswerId.includes(answerId)) {
+        chosenAnswerId = chosenAnswerId.replace(`,${answerId}`, "");
+      } else {
+        chosenAnswerId += `,${answerId}`;
+      }
+      chosenAnswerId = chosenAnswerId.replace("null", "");
     }
-    chosenAnswerId = chosenAnswerId.replace("null", "");
+
     state.currentQuestion = { ...state.currentQuestion, chosenAnswerId };
     state.studentAttempt.studentQuestionList = state.studentAttempt.studentQuestionList.map(
       (ques) => {
@@ -53,5 +62,11 @@ export const mutations = {
         return ques;
       }
     );
+  },
+  [mutationTypes.SAVE_STUDENT_ATTEMPT_LIST]: (state, studentAttemptList) => {
+    state.studentAttemptList = studentAttemptList;
+  },
+  [mutationTypes.SAVE_NUMBER_QUESTION]: (state, num) => {
+    state.numberOfQuestion = num;
   },
 };
