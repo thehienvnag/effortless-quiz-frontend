@@ -49,7 +49,7 @@
             <a-col :span="8"
               ><h4>Picture (Optional)</h4>
               <a-upload
-                action="http://localhost:8888/api/uploadFile"
+                action="https://effortless-quiz-back-end.herokuapp.com/api/uploadFile"
                 :tooltip="null"
                 list-type="picture-card"
                 :file-list="fileList"
