@@ -240,6 +240,9 @@ export default {
       });
     }
     Object.assign(this, this.question);
+    if (this.question && this.question.codeContent) {
+      this.code = this.question.codeContent;
+    }
   },
   watch: {
     question() {},
