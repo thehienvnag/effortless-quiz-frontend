@@ -134,10 +134,11 @@ export default {
       this.findLoading = true;
       this.tableLoading = true;
       this.tableAppear = true;
-      await this.$store.dispatch(actionTypes.loadLaunchingQuizzes, {
+      const data = await this.$store.dispatch(actionTypes.loadLaunchingQuizzes, {
         userId: this.userId,
         quizCode: this.quizCode,
       });
+      this.launchQuizzes = data.content;
 
       this.findLoading = false;
       this.tableLoading = false;
