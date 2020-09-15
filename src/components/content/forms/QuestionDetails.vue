@@ -82,10 +82,16 @@
             </a-col>
             <a-col :span="13">
               <h4>Code Example (Optional):</h4>
-              <a-button v-if="!code || !code.length" icon="plus" @click="provideInputCode"
+              <a-button
+                v-if="!code || !code.length"
+                icon="plus"
+                @click="provideInputCode"
                 >Add Code Section</a-button
               >
-              <a-button v-if="code && code.length" icon="close" @click="disableInputCode"
+              <a-button
+                v-if="code && code.length"
+                icon="close"
+                @click="disableInputCode"
                 >Remove Code Section</a-button
               >
             </a-col>
@@ -245,9 +251,25 @@ export default {
     }
   },
   watch: {
-    question() {},
+    question() {
+      if (this.question && this.question.imageLink) {
+        this.showOptional = true;
+        console.log(this.question.imageLink);
+        this.fileList.push({
+          uid: "1",
+          name: "yyy.png",
+          status: "done",
+          url: this.question.imageLink,
+        });
+      }
+      Object.assign(this, this.question);
+      if (this.question && this.question.codeContent) {
+        this.code = this.question.codeContent;
+      }
+    },
   },
   methods: {
+    checkImageContent() {},
     provideInputCode() {
       this.code = 'console.log("Hello World")';
       this.$emit("saveQuestion", {
