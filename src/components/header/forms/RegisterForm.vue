@@ -9,7 +9,7 @@
             {
               rules: [
                 { required: true, message: 'Please input your username!' },
-                { min: 6, message: 'Require at least 8 characters' },
+                { min: 6, message: 'Require at least 6 characters' },
                 { max: 30, message: 'Require at most 30 characters' },
               ],
               initialValue: '',
@@ -27,7 +27,7 @@
             {
               rules: [
                 { required: true, message: 'Please input your Name!' },
-                { min: 6, message: 'Require at least 8 characters' },
+                { min: 6, message: 'Require at least 6 characters' },
                 { max: 30, message: 'Require at most 30 characters' },
               ],
               initialValue: '',
