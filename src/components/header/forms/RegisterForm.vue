@@ -9,6 +9,8 @@
             {
               rules: [
                 { required: true, message: 'Please input your username!' },
+                { min: 6, message: 'Require at least 8 characters' },
+                { max: 30, message: 'Require at most 30 characters' },
               ],
               initialValue: '',
             },
@@ -23,7 +25,11 @@
           v-decorator="[
             'name',
             {
-              rules: [{ required: true, message: 'Please input your Name!' }],
+              rules: [
+                { required: true, message: 'Please input your Name!' },
+                { min: 6, message: 'Require at least 8 characters' },
+                { max: 30, message: 'Require at most 30 characters' },
+              ],
               initialValue: '',
             },
           ]"
@@ -40,6 +46,8 @@
             {
               rules: [
                 { required: true, message: 'Please input your Password!' },
+                { min: 8, message: 'Require at least 8 characters' },
+                { max: 30, message: 'Require at most 30 characters' },
               ],
               initialValue: '',
             },
@@ -112,7 +120,11 @@
     </a-form>
     <div v-else>
       <h3>
-        <a-icon theme="filled" type="check-circle" :style="{color: '#285d70', marginRight: '6px'}"/>
+        <a-icon
+          theme="filled"
+          type="check-circle"
+          :style="{ color: '#285d70', marginRight: '6px' }"
+        />
         You have successfully registered!
       </h3>
       <a-button @click="changeView" type="primary">Login to continue</a-button>
