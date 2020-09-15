@@ -172,6 +172,7 @@ export default {
     handleSubmit(e) {
       e.preventDefault();
       this.form.validateFields(async (err, values) => {
+        console.log('registering!');
         if (!err) {
           this.loading = true;
           await this.$store.dispatch(actionTypes.registerForUser, values);

@@ -8,6 +8,9 @@
       content="This may take a few momments!"
     ></loading-section>
     <a-form v-else :form="form" @submit="handleSubmit">
+      <p v-if="incorrectLogin" :style="{ color: 'red' }">
+        Incorrect username or password!!
+      </p>
       <h2 class="mb-30">Login Form</h2>
       <a-form-item>
         <a-input
@@ -92,6 +95,7 @@ export default {
       form: this.$form.createForm(this, { name: "loginForm" }),
       loginLoading: false,
       loginWithFacebookLoading: false,
+      incorrectLogin: false,
     };
   },
   props: ["changeView", "hideModal"],
@@ -108,7 +112,12 @@ export default {
       this.form.validateFields(async (err, values) => {
         if (!err) {
           this.loginLoading = true;
-          await this.$store.dispatch(actionTypes.logUserIn, values);
+          this.incorrectLogin = false;
+          try {
+            await this.$store.dispatch(actionTypes.logUserIn, values);
+          } catch (error) {
+            this.incorrectLogin = true;
+          }
           this.loginLoading = false;
         }
       });
