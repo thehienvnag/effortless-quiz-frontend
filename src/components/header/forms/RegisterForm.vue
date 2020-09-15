@@ -1,6 +1,9 @@
 <template>
   <div>
     <a-form v-if="registerCompleted" :form="form" @submit="handleSubmit">
+      <p v-if="userExist" :style="{ color: 'red' }">
+        Username already exists!!!
+      </p>
       <h2>Register Form</h2>
       <a-form-item>
         <a-input
@@ -152,6 +155,7 @@ export default {
       form: this.$form.createForm(this, { name: "registerForm" }),
       loading: false,
       registerCompleted: true,
+      userExist: false,
     };
   },
   props: ["changeView"],
@@ -172,10 +176,16 @@ export default {
     handleSubmit(e) {
       e.preventDefault();
       this.form.validateFields(async (err, values) => {
-        console.log('registering!');
+        console.log("registering!");
         if (!err) {
           this.loading = true;
-          await this.$store.dispatch(actionTypes.registerForUser, values);
+          this.userExist = false;
+          try {
+            await this.$store.dispatch(actionTypes.registerForUser, values);
+          } catch (error) {
+            this.userExist = true;
+          }
+
           this.loading = false;
           this.registerCompleted = false;
         }
